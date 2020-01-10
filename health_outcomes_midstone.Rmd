@@ -17,19 +17,77 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ```{r cars}
 library(tidyverse)
+library(readxl)
 ```
 
-Read the csv file- demographics file
+Read the csv file- tn 2019 county health rankings
 ```{r}
-demo<-read_csv()
+tn_2019<-read_excel('data/2019 County Health Rankings Tennessee Data - v1_0.xls', 4, skip=1)
 ```
 
+take a glimpse and remove unncessary columns
+
+```{r}
+glimpse(tn_2019)
+```
+
+```{r}
+
+tn_2019_msrs<-tn_2019 %>% 
+  select(FIPS, State, County, `Years of Potential Life Lost Rate`, `YPLL Rate (Black)`, `YPLL Rate (Hispanic)`, `YPLL Rate (White)`, `% Fair/Poor`, `Physically Unhealthy Days`, `Mentally Unhealthy Days`, `% LBW`, `% LBW (Black)`, `% LBW (Hispanic)`, `% LBW (White)`, `% Smokers`, `% Obese`, `Food Environment Index`, `% Physically Inactive`, `% With Access`, `% Excessive Drinking`, `# Alcohol-Impaired Driving Deaths`, `# Driving Deaths`, `% Alcohol-Impaired`, `# Chlamydia Cases`, `Chlamydia Rate`, `Teen Birth Rate`, `Teen Birth Rate (Black)`, `Teen Birth Rate (Hispanic)`, `Teen Birth Rate (White)`, `# Uninsured`, `% Uninsured`, `# Primary Care Physicians`, `PCP Rate`, `PCP Ratio`, `# Dentists`, `Dentist Rate`, `Dentist Ratio`, `# Mental Health Providers`, `MHP Rate`, `MHP Ratio`, `Preventable Hosp. Rate`, `Preventable Hosp. Rate (Black)`, `Preventable Hosp. Rate (Hispanic)`, `Preventable Hosp. Rate (White)`, `% Screened`, `% Screened (Black)`, `% Screened (Hispanic)`, `% Screened (White)`, `% Vaccinated`, `% Vaccinated (Black)`, `% Vaccinated (Hispanic)`, `% Vaccinated (White)`, `Cohort Size`, `Graduation Rate`, `# Some College`, Population, `% Some College`, `# Unemployed`, `Labor Force`, `% Unemployed`, `% Children in Poverty`, `% Children in Poverty (Black)`, `% Children in Poverty (Hispanic)`, `% Children in Poverty (White)`, `80th Percentile Income`, `20th Percentile Income`, `Income Ratio`, `# Single-Parent Households`, `# Households`, `% Single-Parent Households`, `# Associations`, `Association Rate`, `Annual Average Violent Crimes`, `Violent Crime Rate`, `# Injury Deaths`, `Injury Death Rate`, `Average Daily PM2.5`, `Presence of violation`, `% Severe Housing Problems`, `Severe Housing Cost Burden`, Overcrowding, `Inadequate Facilities`, `% Drive Alone`, `% Drive Alone (Black)`, `% Drive Alone (Hispanic)`, `% Drive Alone (White)`, `# Workers who Drive Alone`, `% Long Commute - Drives Alone`)
+```
+
+Rename some columns in tn_2019msrs
+```{r}
+tn_2019_msrs<-tn_2019_msrs %>% 
+  rename(pct_fair_poor_health = `% Fair/Poor`, pct_exercise_access =`% With Access`, pct_mammography_screen =`% Screened`, pct_mammo_screend_blk = `% Screened (Black)`, pct_mammo_screend_hisp = `% Screened (Hispanic)`, pct_mammo_screend_white = `% Screened (White)`, pct_flu_vaccintd = `% Vaccinated`, pct_flu_vaccintd_blk = `% Vaccinated (Black)`, pct_flu_vaccintd_hisp = `% Vaccinated (Hispanic)`, pct_flu_vaccintd_white = `% Vaccinated (White)`, cohort_grad_size = `Cohort Size`, college_25to44age = `# Some College`)
+```
+
+
+Plots:
+1) Counties with lowest birth weight?
+2)correlation between teen births and low birth weight
+3)distribution of uninsured population
+4)county with highest or lowest uninsured population
+5)correlation between income and uninsured?
+6) use additional health measures data for demographics data and for uninsured adults vs children
+
+low birth weight distribution:
+```{r}
+tn_2019_msrs %>% 
+  ggplot(aes(x=`% LBW`)) +
+  geom_histogram(bins=10)
+```
+most of low birth weight between 8-10
+Counties with lowest birth weight:
+```{r}
+tn_2019_msrs %>% 
+  arrange(`% LBW`) %>% 
+  top_n(5, `% LBW`) %>% 
+  ggplot(aes(x=County, y=`% LBW`)) +
+  geom_col()
+```
+
+
+#read in the additional measure sheet that has demographics data
+```{r}
+tn_2019_addn<-read_excel('data/2019 County Health Rankings Tennessee Data - v1_0.xls', 5, skip=1)
+```
+
+# Glimpse of additional measures dataset and select specific columns
+
+
+For shinyapp:
+compare between states using data reported within the same years. 
+Note- Years reported are not the same as data reported in same year,
+example- 2019 tn report does not mean infant mortality is reported for 2019. its a span of years or not a span. 
+it is possible to compare between years but it wont be year by year comparison ust 
 ## Including Plots
 
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
-plot(pressure)
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -18,6 +18,10 @@ When you click the **Knit** button a document will be generated that includes bo
 ```{r cars}
 library(tidyverse)
 library(readxl)
+install.packages(c("maps", "mapdata"))
+library(maps)
+library(forcats)
+
 ```
 
 Read the csv file- tn 2019 county health rankings
@@ -81,6 +85,42 @@ tn_2019_addn<-tn_2019_addn %>%
    select(FIPS, State, County, `Life Expectancy`, `Life Expectancy (Black)`, `Life Expectancy (Hispanic)`, `Life Expectancy (White)`, `# Deaths...10`, `Age-Adjusted Mortality`, `Age-Adjusted Mortality (Black)`, `Age-Adjusted Mortality (Hispanic)`, `Age-Adjusted Mortality (White)`, `# Deaths...17`, `Child Mortality Rate`, `Child Mortality Rate (Black)`, `Child Mortality Rate (Hispanic)`, `Child Mortality Rate (White)`, `# Deaths...24`, `Infant Mortality Rate`, `Infant Mortality Rate (Black)`, `Infant Mortality Rate (Hispanic)`, `Infant Mortality Rate (White)`, `% Frequent Physical Distress`, `% Frequent Mental Distress`, `% Diabetic`, `# HIV Cases`, `HIV Prevalence Rate`, `# Food Insecure`, `% Food Insecure`, `# Limited Access`, `% Limited Access`, `# Drug Overdose Deaths`, `Drug Overdose Mortality Rate`, `# Motor Vehicle Deaths`, `MV Mortality Rate`, `% Insufficient Sleep`, `# Uninsured...55`, `% Uninsured...56`, `# Uninsured...59`, `% Uninsured...60`, `Other PCP Rate`, `Other PCP Ratio`, `% Disconnected Youth`, `Household Income`, `Household income (Black)`, `Household income (Hispanic)`, `Household income (White)`, `Segregation index`, `Segregation Index`, `Homicide Rate`, `# Firearm Fatalities`, `Firearm Fatalities Rate`, `# Homeowners`, `% Homeowners`, `# Households with Severe Cost Burden`, Population, `% Severe Housing Cost Burden`, Population, `% < 18`, `% 65 and over`, `# African American`, `% African American`, `# American Indian/Alaskan Native`, `% American Indian/Alaskan Native`, `# Asian`, `% Asian`, `# Native Hawaiian/Other Pacific Islander`, `% Native Hawaiian/Other Pacific Islander`, `# Hispanic`, `% Hispanic`, `# Non-Hispanic White`, `% Non-Hispanic White`, `# Not Proficient in English`, `% Not Proficient in English`, `% Female`, `# Rural`, `% Rural`)
 ```
 
+```{r}
+glimpse(tn_2019_addn)
+```
+
+plotting demographics
+```{r}
+tn_2019_addn %>%
+   filter(FIPS!=47000) %>% 
+   ggplot(aes(x=Population)) + geom_histogram(bins=20) 
+```
+
+demographics only dataset taken from orginal addtal measures data
+included in demographics - population, population based on age, race and sex and rural, homeowners, household income
+```{r}
+demo_tn_2019<- tn_2019_addn %>% 
+  select(FIPS, State, County, `Household Income`, `Household income (Black)`, `Household income (Hispanic)`, `Household income (White)`, `Segregation index`, `Segregation Index`, `# Homeowners`, `% Homeowners`, `# Households with Severe Cost Burden`, Population, `% Severe Housing Cost Burden`, Population, `% < 18`, `% 65 and over`, `# African American`, `% African American`, `# American Indian/Alaskan Native`, `% American Indian/Alaskan Native`, `# Asian`, `% Asian`, `# Native Hawaiian/Other Pacific Islander`, `% Native Hawaiian/Other Pacific Islander`, `# Hispanic`, `% Hispanic`, `# Non-Hispanic White`, `% Non-Hispanic White`, `# Not Proficient in English`, `% Not Proficient in English`, `% Female`, `# Rural`, `% Rural`)
+```
+
+```{r}
+demo_tn_2019 %>% 
+  arrange(`Household Income`) %>% 
+  mutate(County= fct_reorder(County, `Household Income`)) %>% 
+  top_n(10, `Household Income`) %>% 
+  ggplot(aes(x=County, y=`Household Income`)) +
+  geom_point(color="blue", size=4, alpha=0.6) +
+  geom_segment(aes(x=County, xend=County, y=0, yend=`Household Income`), color="skyblue")+
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank(),
+    text = element_text(size=15)
+  )
+```
+
 For shinyapp:
 compare between states using data reported within the same years. 
 Note- Years reported are not the same as data reported in same year,
@@ -91,7 +131,13 @@ it is possible to compare between years but it wont be year by year comparison u
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
+usa <- map_data("usa") # we already did this, but we can do it again
+ggplot() + geom_polygon(data = usa, aes(x=long, y = lat, group = group)) + 
+  coord_fixed(1.3)
+```
 
+```{r}
+states <- map_data("state")
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

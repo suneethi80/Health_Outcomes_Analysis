@@ -34,7 +34,7 @@ take a glimpse and remove unncessary columns
 ```{r}
 glimpse(tn_2019)
 ```
-
+#select specific columns from tn_2019_msrs
 ```{r}
 
 tn_2019_msrs<-tn_2019 %>% 
@@ -111,6 +111,25 @@ demo_tn_2019 %>%
   ggplot(aes(x=County, y=`Household Income`)) +
   geom_point(color="blue", size=4, alpha=0.6) +
   geom_segment(aes(x=County, xend=County, y=0, yend=`Household Income`), color="skyblue")+
+  labs(title="Top 10 Counties with Highest Income")+
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank(),
+    text = element_text(size=15)
+  )
+```
+
+```{r}
+demo_tn_2019 %>% 
+  arrange(`Household Income`) %>% 
+  mutate(County= fct_reorder(County, `Household Income`)) %>% 
+  top_n(-10, `Household Income`) %>% 
+  ggplot(aes(x=County, y=`Household Income`)) +
+  geom_point(color="blue", size=4, alpha=0.6) +
+  geom_segment(aes(x=County, xend=County, y=0, yend=`Household Income`), color="skyblue")+
   theme_light() +
   coord_flip() +
   theme(
@@ -141,3 +160,9 @@ states <- map_data("state")
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+#Saving as RDS file as input for shinyapps
+```{r}
+saveRDS(tn_2019_msrs, file = "tn_2019.RDS")
+```
+

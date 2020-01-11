@@ -76,6 +76,10 @@ tn_2019_addn<-read_excel('data/2019 County Health Rankings Tennessee Data - v1_0
 
 # Glimpse of additional measures dataset and select specific columns
 
+```{r}
+tn_2019_addn<-tn_2019_addn %>% 
+   select(FIPS, State, County, `Life Expectancy`, `Life Expectancy (Black)`, `Life Expectancy (Hispanic)`, `Life Expectancy (White)`, `# Deaths...10`, `Age-Adjusted Mortality`, `Age-Adjusted Mortality (Black)`, `Age-Adjusted Mortality (Hispanic)`, `Age-Adjusted Mortality (White)`, `# Deaths...17`, `Child Mortality Rate`, `Child Mortality Rate (Black)`, `Child Mortality Rate (Hispanic)`, `Child Mortality Rate (White)`, `# Deaths...24`, `Infant Mortality Rate`, `Infant Mortality Rate (Black)`, `Infant Mortality Rate (Hispanic)`, `Infant Mortality Rate (White)`, `% Frequent Physical Distress`, `% Frequent Mental Distress`, `% Diabetic`, `# HIV Cases`, `HIV Prevalence Rate`, `# Food Insecure`, `% Food Insecure`, `# Limited Access`, `% Limited Access`, `# Drug Overdose Deaths`, `Drug Overdose Mortality Rate`, `# Motor Vehicle Deaths`, `MV Mortality Rate`, `% Insufficient Sleep`, `# Uninsured...55`, `% Uninsured...56`, `# Uninsured...59`, `% Uninsured...60`, `Other PCP Rate`, `Other PCP Ratio`, `% Disconnected Youth`, `Household Income`, `Household income (Black)`, `Household income (Hispanic)`, `Household income (White)`, `Segregation index`, `Segregation Index`, `Homicide Rate`, `# Firearm Fatalities`, `Firearm Fatalities Rate`, `# Homeowners`, `% Homeowners`, `# Households with Severe Cost Burden`, Population, `% Severe Housing Cost Burden`, Population, `% < 18`, `% 65 and over`, `# African American`, `% African American`, `# American Indian/Alaskan Native`, `% American Indian/Alaskan Native`, `# Asian`, `% Asian`, `# Native Hawaiian/Other Pacific Islander`, `% Native Hawaiian/Other Pacific Islander`, `# Hispanic`, `% Hispanic`, `# Non-Hispanic White`, `% Non-Hispanic White`, `# Not Proficient in English`, `% Not Proficient in English`, `% Female`, `# Rural`, `% Rural`)
+```
 
 For shinyapp:
 compare between states using data reported within the same years. 

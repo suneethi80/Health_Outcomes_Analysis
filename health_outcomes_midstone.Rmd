@@ -22,6 +22,7 @@ install.packages(c("maps", "mapdata"))
 library(maps)
 library(forcats)
 library(ggplot2)
+library(plotly)
 
 
 ```
@@ -43,10 +44,17 @@ tn_2019_msrs<-tn_2019 %>%
   select(FIPS, State, County, `Years of Potential Life Lost Rate`, `YPLL Rate (Black)`, `YPLL Rate (Hispanic)`, `YPLL Rate (White)`, `% Fair/Poor`, `Physically Unhealthy Days`, `Mentally Unhealthy Days`, `% LBW`, `% LBW (Black)`, `% LBW (Hispanic)`, `% LBW (White)`, `% Smokers`, `% Obese`, `Food Environment Index`, `% Physically Inactive`, `% With Access`, `% Excessive Drinking`, `# Alcohol-Impaired Driving Deaths`, `# Driving Deaths`, `% Alcohol-Impaired`, `# Chlamydia Cases`, `Chlamydia Rate`, `Teen Birth Rate`, `Teen Birth Rate (Black)`, `Teen Birth Rate (Hispanic)`, `Teen Birth Rate (White)`, `# Uninsured`, `% Uninsured`, `# Primary Care Physicians`, `PCP Rate`, `PCP Ratio`, `# Dentists`, `Dentist Rate`, `Dentist Ratio`, `# Mental Health Providers`, `MHP Rate`, `MHP Ratio`, `Preventable Hosp. Rate`, `Preventable Hosp. Rate (Black)`, `Preventable Hosp. Rate (Hispanic)`, `Preventable Hosp. Rate (White)`, `% Screened`, `% Screened (Black)`, `% Screened (Hispanic)`, `% Screened (White)`, `% Vaccinated`, `% Vaccinated (Black)`, `% Vaccinated (Hispanic)`, `% Vaccinated (White)`, `Cohort Size`, `Graduation Rate`, `# Some College`, Population, `% Some College`, `# Unemployed`, `Labor Force`, `% Unemployed`, `% Children in Poverty`, `% Children in Poverty (Black)`, `% Children in Poverty (Hispanic)`, `% Children in Poverty (White)`, `80th Percentile Income`, `20th Percentile Income`, `Income Ratio`, `# Single-Parent Households`, `# Households`, `% Single-Parent Households`, `# Associations`, `Association Rate`, `Annual Average Violent Crimes`, `Violent Crime Rate`, `# Injury Deaths`, `Injury Death Rate`, `Average Daily PM2.5`, `Presence of violation`, `% Severe Housing Problems`, `Severe Housing Cost Burden`, Overcrowding, `Inadequate Facilities`, `% Drive Alone`, `% Drive Alone (Black)`, `% Drive Alone (Hispanic)`, `% Drive Alone (White)`, `# Workers who Drive Alone`, `% Long Commute - Drives Alone`)
 ```
 
+
 Rename some columns in tn_2019msrs
 ```{r}
 tn_2019_msrs<-tn_2019_msrs %>% 
   rename(pct_fair_poor_health = `% Fair/Poor`, pct_exercise_access =`% With Access`, pct_mammography_screen =`% Screened`, pct_mammo_screend_blk = `% Screened (Black)`, pct_mammo_screend_hisp = `% Screened (Hispanic)`, pct_mammo_screend_white = `% Screened (White)`, pct_flu_vaccintd = `% Vaccinated`, pct_flu_vaccintd_blk = `% Vaccinated (Black)`, pct_flu_vaccintd_hisp = `% Vaccinated (Hispanic)`, pct_flu_vaccintd_white = `% Vaccinated (White)`, cohort_grad_size = `Cohort Size`, college_25to44age = `# Some College`)
+```
+
+#remove FIPS=47000 - whole state of tennessee observations
+```{r}
+tn_2019_msrs1<-tn_2019_msrs %>% 
+  filter(FIPS!=47000)
 ```
 
 
@@ -87,6 +95,13 @@ tn_2019_addn<-tn_2019_addn %>%
    select(FIPS, State, County, `Life Expectancy`, `Life Expectancy (Black)`, `Life Expectancy (Hispanic)`, `Life Expectancy (White)`, `# Deaths...10`, `Age-Adjusted Mortality`, `Age-Adjusted Mortality (Black)`, `Age-Adjusted Mortality (Hispanic)`, `Age-Adjusted Mortality (White)`, `# Deaths...17`, `Child Mortality Rate`, `Child Mortality Rate (Black)`, `Child Mortality Rate (Hispanic)`, `Child Mortality Rate (White)`, `# Deaths...24`, `Infant Mortality Rate`, `Infant Mortality Rate (Black)`, `Infant Mortality Rate (Hispanic)`, `Infant Mortality Rate (White)`, `% Frequent Physical Distress`, `% Frequent Mental Distress`, `% Diabetic`, `# HIV Cases`, `HIV Prevalence Rate`, `# Food Insecure`, `% Food Insecure`, `# Limited Access`, `% Limited Access`, `# Drug Overdose Deaths`, `Drug Overdose Mortality Rate`, `# Motor Vehicle Deaths`, `MV Mortality Rate`, `% Insufficient Sleep`, `# Uninsured...55`, `% Uninsured...56`, `# Uninsured...59`, `% Uninsured...60`, `Other PCP Rate`, `Other PCP Ratio`, `% Disconnected Youth`, `Household Income`, `Household income (Black)`, `Household income (Hispanic)`, `Household income (White)`, `Segregation index`, `Segregation Index`, `Homicide Rate`, `# Firearm Fatalities`, `Firearm Fatalities Rate`, `# Homeowners`, `% Homeowners`, `# Households with Severe Cost Burden`, Population, `% Severe Housing Cost Burden`, Population, `% < 18`, `% 65 and over`, `# African American`, `% African American`, `# American Indian/Alaskan Native`, `% American Indian/Alaskan Native`, `# Asian`, `% Asian`, `# Native Hawaiian/Other Pacific Islander`, `% Native Hawaiian/Other Pacific Islander`, `# Hispanic`, `% Hispanic`, `# Non-Hispanic White`, `% Non-Hispanic White`, `# Not Proficient in English`, `% Not Proficient in English`, `% Female`, `# Rural`, `% Rural`)
 ```
 
+
+#removing tennessee row from tn_2019_addn
+```{r}
+tn_2019_addnl<-tn_2019_addn %>% 
+  filter(FIPS!=47000)
+```
+
 ```{r}
 glimpse(tn_2019_addn)
 ```
@@ -101,7 +116,7 @@ tn_2019_addn %>%
 demographics only dataset taken from orginal addtal measures data
 included in demographics - population, population based on age, race and sex and rural, homeowners, household income
 ```{r}
-demo_tn_2019<- tn_2019_addn %>% 
+demo_tn_2019<- tn_2019_addnl %>% 
   select(FIPS, State, County, `Household Income`, `Household income (Black)`, `Household income (Hispanic)`, `Household income (White)`, `Segregation index`, `Segregation Index`, `# Homeowners`, `% Homeowners`, `# Households with Severe Cost Burden`, Population, `% Severe Housing Cost Burden`, Population, `% < 18`, `% 65 and over`, `# African American`, `% African American`, `# American Indian/Alaskan Native`, `% American Indian/Alaskan Native`, `# Asian`, `% Asian`, `# Native Hawaiian/Other Pacific Islander`, `% Native Hawaiian/Other Pacific Islander`, `# Hispanic`, `% Hispanic`, `# Non-Hispanic White`, `% Non-Hispanic White`, `# Not Proficient in English`, `% Not Proficient in English`, `% Female`, `# Rural`, `% Rural`)
 ```
 
@@ -142,7 +157,8 @@ demo_tn_2019 %>%
   )
 ```
 
-tn map showing population and income
+#tn map showing population 
+
 ```{r}
 states <- map_data("state")
 tn<-subset(states, region %in% c("tennessee"))
@@ -190,20 +206,118 @@ ditch_the_axes <- theme(
   panel.grid = element_blank(),
   axis.title = element_blank())
 tncopa <- inner_join(tn_county, demo_tn_pops, by = "County")
+saveRDS(tncopa, file="tncopa.RDS")
+saveRDS(demo_tn_pops, file="demo_tn_pops.RDS")
 elb<-tn_base + 
       geom_polygon(data = tncopa, aes(fill = Population), color = "white") +
       geom_polygon(color = "black", fill = NA) +
     theme_bw() +
       ditch_the_axes 
 elb
-elb + 
+elb<-elb + 
     scale_fill_gradientn(colours = rev(rainbow(7)),
                          breaks = c(10000, 30000, 100000, 300000, 700000),
                          trans = "log10")
+elb
+ggplotly(elb)
+
+```
+
+# Full join or inner join of tn_2019_msrs1 and tn_2019_addnl
+```{r}
+tn_2019_healthtotal<-full_join(tn_2019_msrs1, tn_2019_addnl, by="County")
+tn_2019_healthtotal<-tn_2019_healthtotal %>% 
+  rename(Premature_deaths= `# Deaths...10`, child_mortality =`# Deaths...17`, infant_mortality=`# Deaths...24`)
+```
+
+#Save complete dataset as RDS
+```{r}
+saveRDS(tn_2019_healthtotal, file = "tn_2019_totalhealth.RDS")
+```
+
+#Health factors alone dataset: %diabetic, hiv cases, physical/mental unhealthy days, %smokers, %obese, %excessive drinking and #chlamydia cases
+```{r}
+tn_2019_hfactors<-tn_2019_healthtotal %>% 
+  select(FIPS.x, State.x, County, `% Diabetic`, `# HIV Cases`, `HIV Prevalence Rate`, `Physically Unhealthy Days`, `Mentally Unhealthy Days`, `% Smokers`, `% Obese`, `% Excessive Drinking`, `# Chlamydia Cases`, `Chlamydia Rate`)
+tn_2019_hfactors<-tn_2019_hfactors %>% 
+  rename(FIPS=FIPS.x, State=State.x)
+tn_2019_hfactors1<-tn_2019_hfactors %>% 
+  select(County, `% Diabetic`, `% Smokers`, `% Obese`, `% Excessive Drinking`)
+
 
 
 ```
 
+#pivot the data for tn_2019_hfactors
+```{r}
+tn_2019_hlth<-tn_2019_hfactors1 %>% 
+  rename(Diabetic=`% Diabetic`, Smokers=`% Smokers`, Obese=`% Obese`, `Excess Drinking`=`% Excessive Drinking`) %>% 
+  pivot_longer(cols=c(Diabetic, Smokers, Obese, `Excess Drinking`), names_to = "outcome", values_to = "value")
+tn_2019_hlth
+```
+
+```{r}
+saveRDS(tn_2019_hlth, file="tn_2019hfactors.RDS")
+```
+
+```{r}
+class(tn_2019_hlth)
+#p<-as.data.frame(p)
+```
+
+#Plots to show county wise health measures like %diabetic and % obese
+types of plots - facet?
+```{r}
+tn_2019_hlth %>% 
+  ggplot(aes(x=County, y=value, fill=outcome)) + 
+  geom_bar(position="dodge", stat="identity") +
+  facet_wrap(~outcome) 
+  
+```
+
+```{r}
+tn_2019_hlth %>% 
+  filter(County=="Anderson") %>% 
+  ggplot(aes(x=County, y=value)) + 
+                geom_bar(position="dodge", stat="identity") +
+                facet_wrap(~outcome)
+
+```
+
+```{r}
+tn_2019_hlth %>% 
+  filter(County=="Anderson") %>% 
+  ggplot(aes(x=outcome, y=value)) + 
+                geom_bar(position="dodge", stat="identity") 
+```
+
+# Mortality pivoted data
+```{r}
+mortality<-tn_2019_healthtotal %>% 
+  select(County, `# Alcohol-Impaired Driving Deaths`, `# Driving Deaths`, `Age-Adjusted Mortality`, `Child Mortality Rate`, `Infant Mortality Rate`, `Drug Overdose Mortality Rate`, `MV Mortality Rate`, `Homicide Rate`, `Firearm Fatalities Rate`)
+  
+mortality<-mortality %>% 
+  rename(`Alcohol-Impaired` = `# Alcohol-Impaired Driving Deaths`, Driving=`# Driving Deaths`, `Drug Overdose`=`Drug Overdose Mortality Rate`, `Motor Vehicle`=`MV Mortality Rate`, Homicide= `Homicide Rate`, Firearm = `Firearm Fatalities Rate`) %>% 
+  pivot_longer(cols=c(`Alcohol-Impaired`, Driving, `Age-Adjusted Mortality`, `Child Mortality Rate`, `Infant Mortality Rate`, `Drug Overdose`, `Motor Vehicle`, `Homicide`, `Firearm`), names_to = "Deaths", values_to = "value")
+
+head(mortality)
+
+
+```
+
+#Save RDS for mortality
+```{r}
+saveRDS(mortality, file="mortality.RDS")
+```
+
+#plot mortality for a specific county
+```{r}
+mortality %>% 
+  filter(County=="Anderson") %>% 
+  ggplot(aes(x=Deaths, y=value)) + 
+                geom_bar(position="dodge", stat="identity") +
+  coord_flip()
+```
 
 For shinyapp:
 compare between states using data reported within the same years. 
@@ -229,5 +343,9 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 #Saving as RDS file as input for shinyapps
 ```{r}
 saveRDS(tn_2019_msrs, file = "tn_2019.RDS")
+```
+
+```{r}
+glimpse(tn_2019_healthtotal)
 ```
 

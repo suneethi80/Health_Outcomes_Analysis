@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
+#Libraries
 ```{r cars}
 library(tidyverse)
 library(readxl)
@@ -23,6 +23,8 @@ library(maps)
 library(forcats)
 library(ggplot2)
 library(plotly)
+library(viridis)
+library(GGally)
 
 
 ```
@@ -188,10 +190,11 @@ head(tn_county)
 
 ```{r}
 demo_tn_pops<-demo_tn_2019 %>% 
-  select(State, County, Population) 
+  select(State, County, Population, `% Rural`) %>% 
+  rename(Rural_pct=`% Rural`)
 demo_tn_pops$County<-tolower(demo_tn_pops$County)
 head(demo_tn_pops)
-names(demo_tn_pops)<-c("State", "County", "Population")
+names(demo_tn_pops)<-c("State", "County", "Population", "Rural_pct")
 demo_tn_pops$Population <- as.numeric(demo_tn_pops$Population)
 head(demo_tn_pops)
 
@@ -220,6 +223,21 @@ elb<-elb +
                          trans = "log10")
 elb
 ggplotly(elb)
+
+```
+
+```{r}
+elb1<-tn_base + 
+      geom_polygon(data = tncopa, aes(fill = Rural_pct), color = "white") +
+      geom_polygon(color = "black", fill = NA) +
+    theme_bw() +
+      ditch_the_axes +  
+  ggtitle("Percentage of Rural Population in Tennessee Counties") +
+    scale_fill_gradientn(colours = rev(rainbow(7)),
+                         trans = "log10")
+
+
+ggplotly(elb1)
 
 ```
 
@@ -275,6 +293,14 @@ tn_2019_hlth %>%
   
 ```
 
+
+```{r}
+tn_2019_hlth %>% 
+  filter(County=="Davidson") %>% 
+  ggplot(aes(x=County, y=value, fill=outcome)) + 
+  geom_bar(position="dodge", stat="identity") 
+```
+
 ```{r}
 tn_2019_hlth %>% 
   filter(County=="Anderson") %>% 
@@ -318,6 +344,103 @@ mortality %>%
                 geom_bar(position="dodge", stat="identity") +
   coord_flip()
 ```
+#Rename Population in healthtotal
+```{r}
+tn_2019_healthtotal<-tn_2019_healthtotal %>% 
+  rename(Pop_25to44=Population.x, Pop_total=Population.y)
+tn_2019_healthtotal<-tn_2019_healthtotal %>% 
+  rename(Rural_pct=`% Rural`)
+tn_2019_healthtotal<-tn_2019_healthtotal %>% 
+  rename(Diabetic_pct=`% Diabetic`, Smokers_pct=`% Smokers`)
+tn_2019_healthtotal<-tn_2019_healthtotal %>% 
+  rename(Obese_pct= `% Obese`, Excess_drinkg_pct=`% Excessive Drinking`, Alcohol_drivg_death= `# Alcohol-Impaired Driving Deaths`, alcohol_impaird=`% Alcohol-Impaired`, Drivg_deaths_no=`# Driving Deaths`, Uninsured_pct=`% Uninsured`, College_pct=`% Some College`, Unemployed_pct=`% Unemployed`, Childrn_poverty_pct=`% Children in Poverty`, singl_parent_househld_pct=`% Single-Parent Households`, Injury_death_no=`# Injury Deaths`, Housing_prblm_pct=`% Severe Housing Problems`, Lack_sleep=`% Insufficient Sleep`, Uninsurd_adults_pct=`% Uninsured...56`, Uninsurd_childrn_pct=`% Uninsured...60`, Homeownr_pct=`% Homeowners`)
+tn_2019_healthtotal<-tn_2019_healthtotal %>% 
+  rename(lbw_pct=`% LBW`)
+tn_2019_healthtotal<-tn_2019_healthtotal %>% 
+  rename(alcohol_impaird_pct=alcohol_impaird)
+         
+         
+```
+
+```{r}
+class(tn_2019_healthtotal)
+```
+#Counties with highest and lowest rural population
+```{r}
+tn_2019_healthtotal %>% 
+  arrange(desc(Rural_pct)) %>% 
+  top_n(n=10, wt=Rural_pct) %>% 
+  mutate(County= fct_reorder(County, Rural_pct)) %>% 
+  ggplot(aes(x=County, y=Rural_pct)) +
+  geom_point(color="blue", size=4, alpha=0.6) +
+  geom_segment(aes(x=County, xend=County, y=0, yend=Rural_pct), color="skyblue")+
+  labs(title="Counties with Highest Rural Population")+
+  xlab("Counties") +
+  ylab("Rural Population Percentage") +
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank(),
+    text = element_text(size=15)
+  )
+  
+```
+
+Health disorders in counties with highest rural population
+```{r}
+tn_2019_healthtotal %>% 
+  filter(Rural_pct==100) %>% 
+  slice(1:6) %>% 
+  #gather(key="MesureType", value="Val") %>% 
+  ggplot(aes(x=County, y=Smokers_pct, fill=County))+
+  geom_bar(stat="identity")+
+  coord_flip()+
+  theme_classic()
+```
+
+#Pivot the data with rural % and health disorders
+
+
+#Pivot the data with rural % and socio-economic factors
+
+
+#pivot the data with rural % and mortality rates
+
+
+
+
+#Effect of Rural population on health status, college education and teen births
+```{r}
+r<-tn_2019_healthtotal %>% 
+  ggplot(aes(x=Rural_pct, y=College_pct)) +
+  geom_point(color="black") +
+  theme_classic()
+ggplotly(r)
+```
+
+```{r}
+tn_2019_healthtotal %>% 
+  ggplot(aes(x=Rural_pct, y=Smokers_pct)) +
+  geom_point(color="black") +
+  theme_classic()
+```
+
+#distribution of obesity
+```{r}
+a<-tn_2019_healthtotal %>% 
+  ggplot(aes(x=Obese_pct))+
+  geom_histogram() +theme_classic()
+ggplotly(a)
+```
+
+
+```{r}
+tn_2019_healthtotal %>% 
+  select(`Rural_pct`, Excess_drinkg_pct, alcohol_impaird_pct, Smokers_pct, Diabetic_pct, `Teen Birth Rate`, `Uninsured_pct`, `PCP Rate`, `College_pct`, Unemployed_pct, `Childrn_poverty_pct`, `Violent Crime Rate`, `Child Mortality Rate`, `Infant Mortality Rate`) %>% 
+  ggcorr(nbreaks=5, hjust=0.75, size = 3, color = "grey50", label=TRUE, layout.exp=1, label_alpha=TRUE)
+```
 
 For shinyapp:
 compare between states using data reported within the same years. 
@@ -345,6 +468,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 saveRDS(tn_2019_msrs, file = "tn_2019.RDS")
 ```
 
+#Glimpse of tn-2019_healthtotal
 ```{r}
 glimpse(tn_2019_healthtotal)
 ```

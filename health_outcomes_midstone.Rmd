@@ -185,6 +185,17 @@ head(tn_county)
 tn_county<-tn_county %>% 
   rename(County=subregion, State=region)
 head(tn_county)
+
+```
+
+```{r}
+unique(tn_county[,6])
+```
+
+```{r}
+tn_county<-gdp_df %>% 
+  mutate(Country= str_replace(Country, "CÃ´te d'Ivoire", "Ivory Coast")) %>% 
+"de kalb"
 ```
 
 
@@ -193,6 +204,9 @@ demo_tn_pops<-demo_tn_2019 %>%
   select(State, County, Population, `% Rural`) %>% 
   rename(Rural_pct=`% Rural`)
 demo_tn_pops$County<-tolower(demo_tn_pops$County)
+demo_tn_pops<-demo_tn_pops %>% 
+  mutate(County= str_replace(County, "dekalb", "de kalb"))
+
 head(demo_tn_pops)
 names(demo_tn_pops)<-c("State", "County", "Population", "Rural_pct")
 demo_tn_pops$Population <- as.numeric(demo_tn_pops$Population)
@@ -232,9 +246,9 @@ elb1<-tn_base +
       geom_polygon(color = "black", fill = NA) +
     theme_bw() +
       ditch_the_axes +  
-  ggtitle("Percentage of Rural Population in Tennessee Counties") +
-    scale_fill_gradientn(colours = rev(rainbow(7)),
-                         trans = "log10")
+  ggtitle("Percentage of Rural Population in Tennessee Counties", ) 
+    # scale_fill_gradientn(colours = rev(rainbow(7)), breaks=c(50, 100), 
+    #                      trans = "log10")
 
 
 ggplotly(elb1)
@@ -320,11 +334,13 @@ tn_2019_hlth %>%
 # Mortality pivoted data
 ```{r}
 mortality<-tn_2019_healthtotal %>% 
-  select(County, `# Alcohol-Impaired Driving Deaths`, `# Driving Deaths`, `Age-Adjusted Mortality`, `Child Mortality Rate`, `Infant Mortality Rate`, `Drug Overdose Mortality Rate`, `MV Mortality Rate`, `Homicide Rate`, `Firearm Fatalities Rate`)
+  select(County, Alcohol_drivg_death, Drivg_deaths_no, `Age-Adjusted Mortality`, `Child Mortality Rate`, `Infant Mortality Rate`, `Drug Overdose Mortality Rate`, `MV Mortality Rate`, `Homicide Rate`, `Firearm Fatalities Rate`, Rural_pct)
+
   
-mortality<-mortality %>% 
-  rename(`Alcohol-Impaired` = `# Alcohol-Impaired Driving Deaths`, Driving=`# Driving Deaths`, `Drug Overdose`=`Drug Overdose Mortality Rate`, `Motor Vehicle`=`MV Mortality Rate`, Homicide= `Homicide Rate`, Firearm = `Firearm Fatalities Rate`) %>% 
-  pivot_longer(cols=c(`Alcohol-Impaired`, Driving, `Age-Adjusted Mortality`, `Child Mortality Rate`, `Infant Mortality Rate`, `Drug Overdose`, `Motor Vehicle`, `Homicide`, `Firearm`), names_to = "Deaths", values_to = "value")
+mortality<-mortality %>%
+  rename(`Drug Overdose`=`Drug Overdose Mortality Rate`, `Motor Vehicle`=`MV Mortality Rate`, Homicide= `Homicide Rate`, Firearm = `Firearm Fatalities Rate`) %>%
+
+pivot_longer(cols=c(Alcohol_drivg_death, Drivg_deaths_no, `Age-Adjusted Mortality`, `Child Mortality Rate`, `Infant Mortality Rate`, `Drug Overdose`, `Motor Vehicle`, `Homicide`, `Firearm`), names_to = "Deaths", values_to = "value")
 
 head(mortality)
 
@@ -344,6 +360,21 @@ mortality %>%
                 geom_bar(position="dodge", stat="identity") +
   coord_flip()
 ```
+
+```{r}
+mortality %>% 
+  filter(Rural_pct==100) %>% 
+  slice(1:6) %>%
+  View()
+  # ggplot(aes(x=County, y=value, fill=Deaths)) + 
+  #               geom_bar(position="dodge", stat="identity") +
+  # coord_flip()+
+  # facet_wrap(~Deaths)+
+  # theme_bw() +
+  # theme(legend.position = "top")
+```
+
+
 #Rename Population in healthtotal
 ```{r}
 tn_2019_healthtotal<-tn_2019_healthtotal %>% 
@@ -388,7 +419,30 @@ tn_2019_healthtotal %>%
   
 ```
 
-Health disorders in counties with highest rural population
+#Urban counties
+```{r}
+tn_2019_healthtotal %>% 
+  arrange(desc(Rural_pct)) %>% 
+  top_n(n=-10, wt=Rural_pct) %>% 
+  mutate(County= fct_reorder(County, Rural_pct)) %>% 
+  ggplot(aes(x=County, y=Rural_pct)) +
+  geom_point(color="blue", size=4, alpha=0.6) +
+  geom_segment(aes(x=County, xend=County, y=0, yend=Rural_pct), color="skyblue")+
+  labs(title="Counties with Lowest Rural Population")+
+  xlab("Counties") +
+  ylab("Rural Population Percentage") +
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank(),
+    text = element_text(size=15)
+  )
+```
+
+
+#Health disorders in counties with highest rural population
 ```{r}
 tn_2019_healthtotal %>% 
   filter(Rural_pct==100) %>% 
@@ -402,6 +456,36 @@ tn_2019_healthtotal %>%
 
 #Pivot the data with rural % and health disorders
 
+```{r}
+tn_2019_healthtotal %>% 
+  filter(Rural_pct==100) %>% 
+  slice(1:6) %>% 
+  pivot_longer(cols=c(Diabetic_pct, Smokers_pct, Excess_drinkg_pct, Obese_pct), names_to = "Health_status", values_to = "Percent") %>% 
+  ggplot(aes(x=County, y=Percent, fill=Health_status)) + 
+                 geom_bar(position="dodge", stat="identity") +
+   coord_flip() +
+  facet_wrap(~Health_status)
+  theme_bw()+
+  theme(legend.position = "top")
+  
+
+```
+
+
+```{r}
+tn_2019_healthtotal %>% 
+  arrange(desc(Rural_pct)) %>% 
+  top_n(n=-10, wt=Rural_pct) %>% 
+  slice(1:6) %>% 
+  mutate(County= fct_reorder(County, Rural_pct)) %>% 
+  pivot_longer(cols=c(Diabetic_pct, Smokers_pct, Excess_drinkg_pct, Obese_pct), names_to = "Health_status", values_to = "Percent") %>% 
+  ggplot(aes(x=County, y=Percent, fill=Health_status)) + 
+                 geom_bar(position="dodge", stat="identity") +
+   coord_flip() +
+  facet_wrap(~Health_status) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
 
 #Pivot the data with rural % and socio-economic factors
 
@@ -415,7 +499,8 @@ tn_2019_healthtotal %>%
 ```{r}
 r<-tn_2019_healthtotal %>% 
   ggplot(aes(x=Rural_pct, y=College_pct)) +
-  geom_point(color="black") +
+  geom_point(color="black") + 
+  geom_smooth(method="lm")
   theme_classic()
 ggplotly(r)
 ```
@@ -424,6 +509,7 @@ ggplotly(r)
 tn_2019_healthtotal %>% 
   ggplot(aes(x=Rural_pct, y=Smokers_pct)) +
   geom_point(color="black") +
+  geom_smooth(method="lm")
   theme_classic()
 ```
 
@@ -436,10 +522,27 @@ ggplotly(a)
 ```
 
 
+
+```{r}
+tn_2019_healthtotal %>% 
+  ggplot(aes(x=Diabetic_pct))+
+  geom_histogram(binwidth = 5) +theme_bw()
+```
+
 ```{r}
 tn_2019_healthtotal %>% 
   select(`Rural_pct`, Excess_drinkg_pct, alcohol_impaird_pct, Smokers_pct, Diabetic_pct, `Teen Birth Rate`, `Uninsured_pct`, `PCP Rate`, `College_pct`, Unemployed_pct, `Childrn_poverty_pct`, `Violent Crime Rate`, `Child Mortality Rate`, `Infant Mortality Rate`) %>% 
   ggcorr(nbreaks=5, hjust=0.75, size = 3, color = "grey50", label=TRUE, layout.exp=1, label_alpha=TRUE)
+
+
+```
+
+#Changing the axis tick mark labels
+```{r}
+# plot + theme(axis.text.x = element_text(face="bold", color="#993333", 
+#                            size=14, angle=45),
+#           axis.text.y = element_text(face="bold", color="#993333", 
+#                            size=14, angle=45))
 ```
 
 For shinyapp:
@@ -448,6 +551,9 @@ Note- Years reported are not the same as data reported in same year,
 example- 2019 tn report does not mean infant mortality is reported for 2019. its a span of years or not a span. 
 it is possible to compare between years but it wont be year by year comparison ust 
 ## Including Plots
+```{r}
+
+```
 
 You can also embed plots, for example:
 
